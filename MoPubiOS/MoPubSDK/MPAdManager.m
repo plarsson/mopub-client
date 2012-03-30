@@ -17,6 +17,7 @@
 #import "MPMraidAdapter.h"
 #import "MPMraidInterstitialAdapter.h"
 #import "CJSONDeserializer.h"
+#import "MPInterstitialAdController.h"
 
 NSString * const kTimerNotificationName = @"Autorefresh";
 NSString * const kErrorDomain = @"mopub.com";
@@ -435,11 +436,17 @@ NSString * const kAdTypeMraid = @"mraid";
 	}
 	
 	SEL selector = NSSelectorFromString(selectorString);
-	
+
+    id delegate = self.adView.delegate;
+
+    if ([delegate isKindOfClass:[MPInterstitialAdController class]]) {
+        delegate = ((MPInterstitialAdController*)delegate).parent;
+    }
+
 	// First, try calling the no-object selector.
-	if ([self.adView.delegate respondsToSelector:selector])
+	if ([delegate respondsToSelector:selector])
 	{
-		[self.adView.delegate performSelector:selector];
+		[delegate performSelector:selector];
 	}
 	// Then, try calling the selector passing in the ad view.
 	else 
@@ -447,12 +454,12 @@ NSString * const kAdTypeMraid = @"mraid";
 		NSString *selectorWithObjectString = [NSString stringWithFormat:@"%@:", selectorString];
 		SEL selectorWithObject = NSSelectorFromString(selectorWithObjectString);
 		
-		if ([self.adView.delegate respondsToSelector:selectorWithObject])
+		if ([delegate respondsToSelector:selectorWithObject])
 		{
 			NSData *data = [dataString dataUsingEncoding:NSUTF8StringEncoding];
 			NSDictionary *dataDictionary = [[CJSONDeserializer deserializer] deserializeAsDictionary:data
 																							   error:NULL];
-			[self.adView.delegate performSelector:selectorWithObject withObject:dataDictionary];
+			[delegate performSelector:selectorWithObject withObject:dataDictionary];
 		}
 		else
 		{
