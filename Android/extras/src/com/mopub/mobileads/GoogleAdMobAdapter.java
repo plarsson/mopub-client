@@ -47,6 +47,10 @@ import com.google.ads.AdRequest;
 import com.google.ads.AdRequest.ErrorCode;
 import com.google.ads.AdSize;
 
+/*
+ * Compatible with version 6.1.0 of the Google AdMob Ads SDK.
+ */
+
 public class GoogleAdMobAdapter extends BaseAdapter implements AdListener {
     
     private com.google.ads.AdView mAdMobView;
@@ -66,7 +70,7 @@ public class GoogleAdMobAdapter extends BaseAdapter implements AdListener {
             adWidth = object.getInt("adWidth");
             adHeight = object.getInt("adHeight");
         } catch (JSONException e) {
-            mMoPubView.adFailed(); 
+            mMoPubView.loadFailUrl(); 
             return; 
         }
 
@@ -81,7 +85,7 @@ public class GoogleAdMobAdapter extends BaseAdapter implements AdListener {
         	adType = AdSize.IAB_LEADERBOARD;
         else {
         	Log.e("MoPub", "Failed to retrieve ad from AdMob native. Unsupported ad size: " + adWidth + "x" + adHeight);
-        	mMoPubView.adFailed();
+        	mMoPubView.loadFailUrl();
         	return;
         }
         
@@ -100,8 +104,10 @@ public class GoogleAdMobAdapter extends BaseAdapter implements AdListener {
 
     @Override
     public void invalidate() {
-        mMoPubView.removeView(mAdMobView);
-        mAdMobView.destroy();
+        if (mAdMobView != null) {
+            mMoPubView.removeView(mAdMobView);
+            mAdMobView.destroy();
+        }
         super.invalidate();
     }
     

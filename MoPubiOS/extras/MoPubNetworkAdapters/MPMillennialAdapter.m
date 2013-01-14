@@ -43,10 +43,12 @@
 
 - (void)getAdWithParams:(NSDictionary *)params
 {
-	NSData *hdrData = [(NSString *)[params objectForKey:@"X-Nativeparams"] 
+	CJSONDeserializer *deserializer = [CJSONDeserializer deserializerWithNullObject:NULL];
+    
+    NSData *hdrData = [(NSString *)[params objectForKey:@"X-Nativeparams"] 
 					   dataUsingEncoding:NSUTF8StringEncoding];
-	NSDictionary *hdrParams = [[CJSONDeserializer deserializer] deserializeAsDictionary:hdrData
-																				  error:NULL];
+	NSDictionary *hdrParams = [deserializer deserializeAsDictionary:hdrData error:NULL];
+    
 	[self setAdPropertiesFromNativeParams:hdrParams];
 	[self tearDownExistingAdView];
 	
@@ -56,6 +58,8 @@
 								 delegate:self
 								   loadAd:NO
 							   startTimer:NO];
+    
+    self.mmAdView.rootViewController = [self.delegate viewControllerForPresentingModalView];
 	[self.mmAdView refreshAd];
 }
 

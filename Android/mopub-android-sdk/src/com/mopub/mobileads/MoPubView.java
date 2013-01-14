@@ -80,6 +80,7 @@ public class MoPubView extends FrameLayout {
     }
 
     public static final String HOST = "ads.mopub.com";
+    public static final String HOST_FOR_TESTING = "testing.ads.mopub.com";
     public static final String AD_HANDLER = "/m/ad";
     public static final int DEFAULT_LOCATION_PRECISION = 6;
 
@@ -208,7 +209,11 @@ public class MoPubView extends FrameLayout {
     }
     
     private void unregisterScreenStateBroadcastReceiver() {
-        mContext.unregisterReceiver(mScreenStateReceiver);
+        try {
+            mContext.unregisterReceiver(mScreenStateReceiver);
+        } catch (Exception IllegalArgumentException) {
+            Log.d("MoPub", "Failed to unregister screen state broadcast receiver (never registered).");
+        }
     }
     
     public void loadAd() {
@@ -442,5 +447,27 @@ public class MoPubView extends FrameLayout {
     
     public void setAdContentView(View view) {
         if (mAdView != null) mAdView.setAdContentView(view);
+    }
+    
+    public void setTesting(boolean testing) {
+        if (mAdView != null) mAdView.setTesting(testing);
+    }
+    
+    public boolean getTesting() {
+        if (mAdView != null) return mAdView.getTesting();
+        else {
+            Log.d("MoPub", "Can't get testing status for destroyed MoPubView. " + 
+                    "Returning false.");
+            return false;
+        }
+    }
+    
+    public void forceRefresh() {
+        if (mAdapter != null) {
+            mAdapter.invalidate();
+            mAdapter = null;
+        }
+        
+        if (mAdView != null) mAdView.forceRefresh();
     }
 }

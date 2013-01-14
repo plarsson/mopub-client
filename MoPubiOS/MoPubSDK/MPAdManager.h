@@ -11,6 +11,7 @@
 #import "MPStore.h"
 #import "MPBaseAdapter.h"
 #import "MPAdBrowserController.h"
+#import "MPProgressOverlayView.h"
 
 extern NSString * const kTimerNotificationName;
 extern NSString * const kErrorDomain;
@@ -43,10 +44,10 @@ extern NSString * const kAdTypeClear;
 
 #if __IPHONE_OS_VERSION_MAX_ALLOWED >= 50000 // iOS 5.0+
 @interface MPAdManager : NSObject <MPAdapterDelegate, MPAdBrowserControllerDelegate, 
-    UIWebViewDelegate, NSURLConnectionDataDelegate>
+    UIWebViewDelegate, NSURLConnectionDataDelegate, MPProgressOverlayViewDelegate>
 #else
 @interface MPAdManager : NSObject <MPAdapterDelegate, MPAdBrowserControllerDelegate, 
-    UIWebViewDelegate>
+    UIWebViewDelegate, MPProgressOverlayViewDelegate>
 #endif
 {
 	MPAdView *_adView;
@@ -116,14 +117,13 @@ extern NSString * const kAdTypeClear;
 	// Whether the autorefresh timer needs to be scheduled. Use case: during a user-triggered ad 
 	// action, we must postpone any attempted timer scheduling until the action ends. This flag 
 	// allows the "action-ended" callbacks to decide whether the timer needs to be re-scheduled.
-	BOOL _autorefreshTimerNeedsScheduling;	
-	
-	// Handle to the shared store object that manages in-app purchases from ads.
-	MPStore *_store;
+	BOOL _autorefreshTimerNeedsScheduling;
     
     BOOL _previousIgnoresAutorefresh;
     
     BOOL _shouldLoadMRAIDAd;
+    
+    MPAdBrowserController *_currentBrowserController;
 }
 
 @property (nonatomic, readonly) MPAdView *adView;

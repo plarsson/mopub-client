@@ -23,7 +23,8 @@
 
 @implementation MPMillennialInterstitialAdapter
 
-+ (MMAdView *)sharedMMAdViewForAPID:(NSString *)apid delegate:(id<MMAdDelegate>)delegate
++ (MMAdView *)sharedMMAdViewForAPID:(NSString *)apid
+                           delegate:(MPMillennialInterstitialAdapter *)delegate
 {
 	static NSMutableDictionary *sharedMMAdViews;
 	
@@ -55,11 +56,12 @@
 
 - (void)getAdWithParams:(NSDictionary *)params
 {	
-	NSData *hdrData = [(NSString *)[params objectForKey:@"X-Nativeparams"] 
+    CJSONDeserializer *deserializer = [CJSONDeserializer deserializerWithNullObject:NULL];
+    
+    NSData *hdrData = [(NSString *)[params objectForKey:@"X-Nativeparams"] 
 					   dataUsingEncoding:NSUTF8StringEncoding];
-	NSDictionary *hdrParams = [[CJSONDeserializer deserializer] deserializeAsDictionary:hdrData
-																					 error:NULL];
-	NSString *apid = [hdrParams objectForKey:@"adUnitID"];
+    NSDictionary *hdrParams = [deserializer deserializeAsDictionary:hdrData error:NULL];
+    NSString *apid = [hdrParams objectForKey:@"adUnitID"];
 	
 	_mmInterstitialAdView = [[[self class] sharedMMAdViewForAPID:apid delegate:self] retain];
 	
@@ -92,10 +94,23 @@
 
 - (void)showInterstitialFromViewController:(UIViewController *)controller
 {
-    if ([_mmInterstitialAdView checkForCachedAd]) [_mmInterstitialAdView displayCachedAd];
+    if ([_mmInterstitialAdView checkForCachedAd])
+    {
+        _mmInterstitialAdView.rootViewController = controller;
+        if (![_mmInterstitialAdView displayCachedAd])
+        {
+            MPLogInfo(@"Millennial interstitial ad could not be displayed.");
+            [_interstitialAdController interstitialDidExpireForAdapter:self];
+        }
+    }
+    else
+    {
+        MPLogInfo(@"Millennial interstitial ad is no longer cached.");
+        [_interstitialAdController interstitialDidExpireForAdapter:self];
+    }
 }
 
-# pragma mark - 
+# pragma mark -
 # pragma mark MMAdDelegate
 
 - (NSDictionary *)requestData 
